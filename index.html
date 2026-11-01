@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathPod Prototype v1 - Interactive Demo</title>
+<style>
+  :root {
+    --orange: #FF7A00;
+    --navy: #0B2545;
+    --green: #1B7F3B;
+    --red: #B3261E;
+    --grey: #4A4A4A;
+    --near-black: #111111;
+    --white: #FFFFFF;
+    --border-grey: #C9C9C9;
+    --font-scale: 18px;
+  }
+
+  body {
+    font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: var(--near-black);
+    margin: 0;
+    padding: 20px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3 { margin-top: 0; }
+
+  /* App Layout */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+  }
+
+  .section-box {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-grey);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  }
+
+  /* Control Panel */
+  .control-panel {
+    width: 100%;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .control-group { display: flex; gap: 10px; align-items: center; }
+  .control-panel select, .control-panel button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  /* Mobile Frame (Part B) */
+  .mobile-frame {
+    width: 390px;
+    min-height: 844px;
+    background: var(--white);
+    border: 12px solid #222;
+    border-radius: 40px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  .top-bar {
+    background: var(--navy);
+    color: var(--white);
+    padding: 15px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .top-bar .brand { font-size: 22px; font-weight: bold; }
+  .top-bar .controls button {
+    background: rgba(255,255,255,0.2);
+    color: var(--white);
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .screen-content {
+    padding: 24px;
+    flex: 1;
+    overflow-y: auto;
+    font-size: var(--font-scale);
+  }
+
+  .app-footer {
+    padding: 12px 24px;
+    text-align: center;
+    font-size: 14px;
+    background: #f9f9f9;
+    border-top: 1px solid var(--border-grey);
+    color: var(--grey);
+  }
+
+  /* UI Components */
+  .banner-orange {
+    background: var(--orange);
+    color: var(--near-black);
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+
+  .banner-green {
+    background: var(--green);
+    color: var(--white);
+    padding: 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+
+  .chip {
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    border-radius: 28px;
+    color: var(--white);
+    font-weight: bold;
+    font-size: 18px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .chip-green { background: var(--green); }
+  .chip-red { background: var(--red); }
+  .chip-grey { background: var(--grey); }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border-grey);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .btn-primary {
+    min-height: 56px;
+    width: 100%;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+
+  .btn-secondary {
+    min-height: 56px;
+    width: 100%;
+    background: transparent;
+    color: var(--navy);
+    border: 2px solid var(--navy);
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+
+  .info-row { margin-bottom: 12px; }
+  .info-label { font-size: 14px; color: var(--grey); text-transform: uppercase; font-weight: bold; }
+  .info-value { font-weight: bold; }
+
+  /* Desktop Forms & Cards */
+  .desktop-panel { width: 500px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: bold; margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-grey);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 16px;
+  }
+  .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .checkbox-group label { font-weight: normal; }
+
+  /* Map Mock */
+  .map-mock {
+    height: 160px;
+    background: #e5e3df;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-grey);
+    margin-bottom: 16px;
+    font-weight: bold;
+    color: var(--grey);
+  }
+
+  .badge-secondary {
+    background: #e2e8f0;
+    color: #334155;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1 style="text-align: center;">PathPod Prototype v1 Demo</h1>
+
+<!-- Control Panel -->
+<div class="control-panel">
+  <div class="control-group">
+    <label for="stateSwitcher"><strong>State Switcher:</strong></label>
+    <select id="stateSwitcher" onchange="changeState(this.value)">
+      <option value="confirmed">Step-free confirmed</option>
+      <option value="not_step_free">Not step-free</option>
+      <option value="not_confirmed">Not confirmed</option>
+      <option value="ended">Closure ended</option>
+      <option value="offline">No connection (Offline)</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <span><strong>Active View:</strong></span>
+    <button onclick="showScreen('B1')">Mobile Guide (B1)</button>
+    <button onclick="showDesktop('C1')">Site Form (C1)</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- PART B: MOBILE GUIDE (390px Frame) -->
+  <div class="mobile-frame">
+    <div class="top-bar">
+      <div class="brand">PathPod</div>
+      <div class="controls">
+        <button onclick="cycleTextSize()">A A+</button>
+        <button onclick="readAloud()">🔊 Read</button>
+      </div>
+    </div>
+
+    <!-- B1: CLOSURE SUMMARY -->
+    <div id="screen-B1" class="screen-content">
+      <div id="b1-banner" class="banner-orange">🛑 Footpath closed: Garden Street, east side.</div>
+
+      <div class="info-row">
+        <div class="info-label">Where</div>
+        <div class="info-value">Between Mill Lane and Station Road (85 m closed)</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">When</div>
+        <div class="info-value">Mon 2 Nov to Fri 20 Nov 2026</div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Last updated</div>
+        <div class="info-value">Mon 2 Nov, 7:10 am, by the site team</div>
+      </div>
+
+      <div id="b1-chip" class="chip chip-green">✓ Step-free detour available</div>
+
+      <div id="b1-detour-card" class="card">
+        Detour adds 100 m. About 2½ min extra at a slower pace. Seat 75 m along.
+      </div>
+
+      <div id="b1-actions">
+        <button class="btn-primary" onclick="showScreen('B2')">Show step-by-step detour</button>
+        <button class="btn-secondary" onclick="showScreen('B5')">Report a problem</button>
+
+        <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border-grey);">
+        <p style="font-size: 14px; font-weight: bold; color: var(--grey); margin-bottom: 8px;">Phase 2 / Secondary Options:</p>
+        <button class="btn-secondary" style="font-size: 15px; min-height: 44px;" onclick="showScreen('B3')">Send to a family member</button>
+        <button class="btn-secondary" style="font-size: 15px; min-height: 44px;" onclick="showScreen('B4')">Large-print route card</button>
+      </div>
+
+      <p style="font-size: 14px; color: var(--grey); margin-top: 20px;">Site contact: 0400 000 000 (sample)</p>
+    </div>
+
+    <!-- B2: STEP-BY-STEP DETOUR -->
+    <div id="screen-B2" class="screen-content" style="display:none;">
+      <button onclick="showScreen('B1')" style="margin-bottom:12px; border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Back to summary</button>
+      <h2>Step-by-Step Detour</h2>
+      <div class="map-mock">[ Static Map Image ]<br>Red: Closed | Green: Detour</div>
+      <p style="font-weight:bold; font-size:16px;">Total detour 214 m. Adds 100 m. About 4½ min at a slower pace.</p>
+
+      <div class="card">
+        <strong>1. Walk back 36 m</strong> to the Mill Lane crossing.<br>
+        <span style="font-size:14px; color:var(--grey);">Flat concrete, 2.0 m wide.</span>
+      </div>
+      <div class="card">
+        <strong>2. Cross Garden Street</strong> at Mill Lane (14 m).<br>
+        <span style="font-size:14px; color:var(--grey);">Kerb ramps on both sides. Press button and wait for green walking figure.</span>
+      </div>
+      <div class="card">
+        <strong>3. Walk 150 m north</strong> on west footpath.<br>
+        <span style="font-size:14px; color:var(--grey);">Flat concrete, 2.0 m wide. 🪑 Seat at 75 m.</span>
+      </div>
+      <div class="card">
+        <strong>4. Cross Garden Street</strong> at Station Road (14 m).<br>
+        <span style="font-size:14px; color:var(--grey);">Kerb ramps on both sides.</span>
+      </div>
+      <div class="card">
+        <strong>5. Continue north</strong> on east footpath.<br>
+        <span style="font-size:14px; color:var(--grey);">Footpath is open from here.</span>
+      </div>
+
+      <button class="btn-secondary" style="font-size:15px; min-height:44px;" onclick="showScreen('B2b')">Try Walkthrough View (Phase 2)</button>
+      <button class="btn-secondary" onclick="showScreen('B5')">Report a problem on route</button>
+    </div>
+
+    <!-- B2b: GUIDED WALKTHROUGH VIEW (SECONDARY) -->
+    <div id="screen-B2b" class="screen-content" style="display:none;">
+      <span class="badge-secondary">Secondary Feature (B2b)</span>
+      <button onclick="showScreen('B2')" style="display:block; margin:8px 0; border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Back to steps</button>
+      <p style="font-weight:bold; color:var(--grey);">Step 2 of 5</p>
+      <div style="font-size: 48px; text-align: center; margin: 10px 0;">➡️</div>
+      <div class="card" style="font-size: 22px; font-weight: bold; text-align: center;">
+        Cross Garden Street at Mill Lane (14 m).
+      </div>
+      <p style="font-size: 16px; text-align: center; color: var(--grey);">Kerb ramps on both sides. Press the button and wait for green walking figure.</p>
+      <div style="display:flex; gap:10px; margin-top:30px;">
+        <button class="btn-secondary" style="flex:1;" onclick="alert('Previous step')">Previous</button>
+        <button class="btn-primary" style="flex:1;" onclick="alert('Next step')">Next</button>
+      </div>
+    </div>
+
+    <!-- B3: SHARE WITH FAMILY (SECONDARY) -->
+    <div id="screen-B3" class="screen-content" style="display:none;">
+      <span class="badge-secondary">Secondary Feature (B3)</span>
+      <button onclick="showScreen('B1')" style="display:block; margin:8px 0; border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Close</button>
+      <h3>Send route to family</h3>
+      <p>Send details to someone who can help check your route:</p>
+      <button class="btn-secondary" onclick="alert('Message opened')">💬 Message</button>
+      <button class="btn-secondary" onclick="alert('WhatsApp opened')">📲 WhatsApp</button>
+      <button class="btn-secondary" onclick="alert('Email opened')">✉️ Email</button>
+      <button class="btn-primary" onclick="alert('Link copied to clipboard!')">📋 Copy Link</button>
+    </div>
+
+    <!-- B4: ROUTE CARD PREVIEW (SECONDARY) -->
+    <div id="screen-B4" class="screen-content" style="display:none;">
+      <span class="badge-secondary">Secondary Feature (B4/D1)</span>
+      <button onclick="showScreen('B1')" style="display:block; margin:8px 0; border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Back</button>
+      <h3>Large-Print Route Card</h3>
+      <div class="card" style="background:#fff; border:2px solid #000; font-size:16px;">
+        <h4 style="margin-top:0;">Footpath closure: Garden Street (east side)</h4>
+        <p><strong>Dates:</strong> Mon 2 Nov to Fri 20 Nov 2026</p>
+        <p><strong>Step-free detour: YES</strong></p>
+        <p><strong>Extra distance:</strong> 100 m (approx. 2½ min)</p>
+        <p><strong>Seat:</strong> West footpath, 75 m along</p>
+        <p><strong>Call site team:</strong> 0400 000 000</p>
+      </div>
+      <button class="btn-primary" onclick="window.print()">Print Card</button>
+    </div>
+
+    <!-- B5: REPORT A PROBLEM -->
+    <div id="screen-B5" class="screen-content" style="display:none;">
+      <button onclick="showScreen('B1')" style="margin-bottom:12px; border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Cancel</button>
+      <h2>Report a Problem</h2>
+
+      <div class="form-group">
+        <label>1. What is the problem?</label>
+        <select id="reportReason" onchange="checkReportValid()">
+          <option value="">-- Select issue --</option>
+          <option>Footpath blocked</option>
+          <option>Bike or scooter left on path</option>
+          <option>Uneven or broken surface</option>
+          <option>Sign missing or confusing</option>
+          <option>Detour is not step-free</option>
+          <option>Something else</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>2. Can you still get through?</label>
+        <label><input type="radio" name="pass" checked> Yes, easily</label>
+        <label><input type="radio" name="pass"> Yes, with difficulty</label>
+        <label><input type="radio" name="pass"> No</label>
+      </div>
+
+      <div class="form-group">
+        <label>3. Location</label>
+        <p style="font-size:14px; margin:0;">Garden Street, near Station Road</p>
+      </div>
+
+      <div class="form-group">
+        <label>4. Tell us more (optional)</label>
+        <textarea rows="3" maxlength="200" placeholder="Describe the issue..."></textarea>
+      </div>
+
+      <button id="sendReportBtn" class="btn-primary" style="background:var(--grey);" onclick="submitReport()">Send Report</button>
+    </div>
+
+    <!-- B6: REPORT CONFIRMATION -->
+    <div id="screen-B6" class="screen-content" style="display:none; text-align:center;">
+      <h2 style="color:var(--green);">✓ Thank You</h2>
+      <p>Your report has been sent to the site team and the council.</p>
+      <div class="card">
+        <strong>Reference: PP-0001</strong>
+      </div>
+      <p style="font-size:14px; color:var(--grey);">The site team has been notified to check the issue.</p>
+      <button class="btn-primary" onclick="showScreen('B1')">Back to route</button>
+    </div>
+
+    <div class="app-footer">Prototype with sample data.</div>
+  </div>
+
+  <!-- PART C: SITE-TEAM FORM (500px Panel) -->
+  <div id="desktop-C1" class="section-box desktop-panel">
+    <h2>C1: Site-Team Form</h2>
+    <p style="font-size:14px; color:var(--grey);">Fill this form once to generate all signs and mobile guide screens.</p>
+
+    <div class="form-group">
+      <label>Site Name</label>
+      <input type="text" value="Hartley Residential Development (sample)">
+    </div>
+    <div class="form-group">
+      <label>Street & Side</label>
+      <select><option>Garden Street, east side</option></select>
+    </div>
+    <div class="form-group">
+      <label>Closed Section (Metres)</label>
+      <input type="number" value="85">
+    </div>
+    <div class="form-group">
+      <label>Step-Free Detour Available?</label>
+      <select id="stepFreeSelect" onchange="toggleStepFreeChecks(this.value)">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="unsure">Not sure yet</option>
+      </select>
+    </div>
+
+    <div id="stepFreeCheckboxes" class="card">
+      <label style="font-size:14px; font-weight:bold;">Confirm all 4 to show Green Step-Free status:</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" class="sf-check" checked onchange="validateStepFree()"> No steps along detour</label>
+        <label><input type="checkbox" class="sf-check" checked onchange="validateStepFree()"> Kerb ramps at every crossing</label>
+        <label><input type="checkbox" class="sf-check" checked onchange="validateStepFree()"> Path width at least 1.2 m</label>
+        <label><input type="checkbox" class="sf-check" checked onchange="validateStepFree()"> Firm and even surface</label>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="showDesktop('C2')">Generate Signs & Page</button>
+  </div>
+
+  <!-- C2: KIT READY -->
+  <div id="desktop-C2" class="section-box desktop-panel" style="display:none;">
+    <button onclick="showDesktop('C1')" style="border:none; background:none; color:var(--navy); font-weight:bold; cursor:pointer;">← Edit Form</button>
+    <h2 style="color:var(--green);">✓ Your Kit is Ready</h2>
+    <p>Signs A1 to A6 and Mobile Guide page created.</p>
+
+    <div class="card">
+      <strong>Placement Checklist:</strong>
+      <ul style="font-size:14px; padding-left:20px; margin-top:8px;">
+        <li>A1: Last crossing before closure</li>
+        <li>A2 & A6: On barrier fence</li>
+        <li>A3a-c: Along detour route</li>
+        <li>A4: At each street crossing</li>
+        <li>A5: Where detour ends</li>
+      </ul>
+    </div>
+
+    <button class="btn-primary" onclick="alert('Downloading print PDFs...')">Download All Signs (PDF)</button>
+    <button class="btn-secondary" onclick="showDesktop('C3')">Manage Active Closure</button>
+  </div>
+
+  <!-- C3: UPDATE / END -->
+  <div id="desktop-C3" class="section-box desktop-panel" style="display:none;">
+    <h2>C3: Manage Closure</h2>
+    <p>Status: <strong>Active</strong></p>
+    <button class="btn-secondary" onclick="alert('Date change form opened')">Change Dates</button>
+    <button class="btn-primary" style="background:var(--red);" onclick="endClosure()">Mark Closure as Ended</button>
+  </div>
+
+</div>
+
+<script>
+  // Text Scaling
+  let fontSizes = [18, 22, 26];
+  let fontIdx = 0;
+  function cycleTextSize() {
+    fontIdx = (fontIdx + 1) % fontSizes.length;
+    document.documentElement.style.setProperty('--font-scale', fontSizes[fontIdx] + 'px');
+  }
+
+  // Navigation - Mobile Screens
+  function showScreen(screenId) {
+    const screens = ['B1', 'B2', 'B2b', 'B3', 'B4', 'B5', 'B6'];
+    screens.forEach(s => {
+      document.getElementById('screen-' + s).style.display = 'none';
+    });
+    document.getElementById('screen-' + screenId).style.display = 'block';
+  }
+
+  // Navigation - Desktop Panels
+  function showDesktop(panelId) {
+    const panels = ['C1', 'C2', 'C3'];
+    panels.forEach(p => {
+      document.getElementById('desktop-' + p).style.display = 'none';
+    });
+    document.getElementById('desktop-' + panelId).style.display = 'block';
+  }
+
+  // State Switcher logic
+  function changeState(state) {
+    const banner = document.getElementById('b1-banner');
+    const chip = document.getElementById('b1-chip');
+    const card = document.getElementById('b1-detour-card');
+    const actions = document.getElementById('b1-actions');
+
+    actions.style.display = 'block';
+    banner.className = 'banner-orange';
+
+    if (state === 'confirmed') {
+      banner.innerHTML = '🛑 Footpath closed: Garden Street, east side.';
+      chip.className = 'chip chip-green';
+      chip.innerHTML = '✓ Step-free detour available';
+      card.innerHTML = 'Detour adds 100 m. About 2½ min extra at a slower pace. Seat 75 m along.';
+    } else if (state === 'not_step_free') {
+      banner.innerHTML = '🛑 Footpath closed: Garden Street, east side.';
+      chip.className = 'chip chip-red';
+      chip.innerHTML = '⚠️ Detour is not step-free';
+      card.innerHTML = 'Detour involves stairs or rough ground. Ask site team for help: 0400 000 000.';
+    } else if (state === 'not_confirmed') {
+      banner.innerHTML = '🛑 Footpath closed: Garden Street, east side.';
+      chip.className = 'chip chip-grey';
+      chip.innerHTML = '❓ Step-free status not confirmed';
+      card.innerHTML = 'Check with the site team for accessibility details.';
+    } else if (state === 'ended') {
+      banner.className = 'banner-green';
+      banner.innerHTML = '✓ This closure has ended. The footpath is open.';
+      chip.style.display = 'none';
+      card.style.display = 'none';
+      actions.style.display = 'none';
+    } else if (state === 'offline') {
+      banner.innerHTML = '📡 You are offline. Showing last saved route.';
+    }
+  }
+
+  // Text-To-Speech (Browser Native)
+  function readAloud() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const visibleText = document.querySelector('.screen-content[style*="display: block"], .screen-content:not([style*="display: none"])').innerText;
+      const utterance = new SpeechSynthesisUtterance(visibleText);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert('Speech synthesis not supported in this browser.');
+    }
+  }
+
+  // Validation & Form Logic
+  function checkReportValid() {
+    const val = document.getElementById('reportReason').value;
+    const btn = document.getElementById('sendReportBtn');
+    if (val !== '') {
+      btn.style.background = 'var(--navy)';
+      btn.style.cursor = 'pointer';
+    } else {
+      btn.style.background = 'var(--grey)';
+    }
+  }
+
+  function submitReport() {
+    if (document.getElementById('reportReason').value === '') {
+      alert('Please select a problem type.');
+      return;
+    }
+    showScreen('B6');
+  }
+
+  function toggleStepFreeChecks(val) {
+    const box = document.getElementById('stepFreeCheckboxes');
+    box.style.display = val === 'yes' ? 'block' : 'none';
+    if (val !== 'yes') {
+      changeState('not_confirmed');
+    } else {
+      validateStepFree();
+    }
+  }
+
+  function validateStepFree() {
+    const checks = document.querySelectorAll('.sf-check');
+    let allChecked = true;
+    checks.forEach(c => { if (!c.checked) allChecked = false; });
+    changeState(allChecked ? 'confirmed' : 'not_confirmed');
+  }
+
+  function endClosure() {
+    changeState('ended');
+    alert('Closure marked as ended. Mobile guide updated.');
+    showScreen('B1');
+  }
+</script>
+
+</body>
+</html>
